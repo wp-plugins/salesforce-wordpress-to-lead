@@ -113,7 +113,7 @@ e.g. http://yoursite.com/thanks/ not just /thanks/
 * Fix in backend security, preventing XSS hack in the backend.
 
 = 1.0.4 =
-* CSS fix for when sidebar widget and contactform are on the same page.
+* CSS fix for when sidebar widget and contact form are on the same page.
 
 = 1.0.3 =
 * Fix in email verification.
