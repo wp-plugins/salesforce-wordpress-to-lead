@@ -1,5 +1,5 @@
 === WordPress-to-lead for Salesforce CRM ===
-Contributors: nickciske
+Contributors: stonydaddydonkeylabscom, nickciske
 Tags: crm, contact form, contactform, wordpress to lead, wordpresstolead, salesforce.com, salesforce, salesforce crm, contact form plugin, contact form builder, Wordpress CRM
 Requires at least: 2.8
 Tested up to: 3.5.1
@@ -15,8 +15,6 @@ WordPress-to-Lead for Salesforce CRM creates a solid integration between your Wo
 [youtube http://www.youtube.com/watch?v=hnMzkxPUIyc]
 
 You can fully configure all the different settings for the form, and then use a shortcode to insert the form into your posts or pages, or you can use the widget that comes with the plugin and insert the form into your sidebar!
-
-Please see this [WordPress-to-Lead Demo video](http://www.youtube.com/watch?v=hnMzkxPUIyc) to get a full grasp of the power this plugin holds, and visit the [Salesforce WordPress page]( http://www.salesforce.com/form/signup/wordpress-to-lead.jsp?d=70130000000F4Mw). Check out this page to learn more about [CRM for Small Business](http://www.salesforce.com/smallbusinesscenter/).
 
 #### Previous contributors:
 * Joost de Valk (http://profiles.wordpress.org/joostdevalk/)
