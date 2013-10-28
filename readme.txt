@@ -34,7 +34,7 @@ Please see this [WordPress-to-Lead Demo video](http://www.youtube.com/watch?v=hn
 
 1. Upload the `plugin` folder to the `/wp-content/plugins/` directory or install via the Add New Plugin menu
 1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Enter your Salesforce.com Organisation ID on the WordPress-to-Lead plugin configuration page.
+1. Enter your Salesforce.com Organization ID on the WordPress-to-Lead plugin configuration page.
 
 == Frequently Asked Questions ==
 
