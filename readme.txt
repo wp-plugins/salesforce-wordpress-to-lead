@@ -3,7 +3,7 @@ Contributors: stonydaddydonkeylabscom, nickciske
 Tags: crm, contact form, contactform, wordpress to lead, wordpresstolead, salesforce.com, salesforce, salesforce crm, contact form plugin, contact form builder, Wordpress CRM
 Requires at least: 2.8
 Tested up to: 3.7
-Stable tag: 2.1
+Stable tag: 2.1.1
 License: GPLv2
 Donate link: http://thoughtrefinery.com/donate/?item=salesforce
 
@@ -180,6 +180,9 @@ return $emails;
 `
 
 == Changelog ==
+
+= 2.1.1 =
+* Fixes a bug that caused the organization id field to be hidden on new installs
 
 = 2.1 =
 * Add drop down field type (thanks jbuchbinder)
