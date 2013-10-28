@@ -305,7 +305,7 @@ class Salesforce_Admin extends OV_Plugin_Admin {
 							<input type="hidden" value="<?php echo $options['version']; ?>" name="version"/>
 							<?php
 							
-								if( $options['org_id'] )
+								//if( $options['org_id'] )
 									//$class='closed';
 								
 								$content = $this->textinput('org_id',__('Your Salesforce.com organisation ID','salesforce'));
