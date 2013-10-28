@@ -461,6 +461,13 @@ if( $form_id && !isset($options['forms'][$form_id]) ){
 									
 									$this->postbox('sfformtitle',__('Form Name', 'salesforce'),$content);
 									
+									$loc = 'banner-main';
+									$ad = $this->get_ad_code( $loc );		
+									if( $ad ){
+										$link = $this->get_ad_link( $ad['id'], $loc );
+										echo '<p style="text-align: center;"><a href="'.$link.'" target="_blank"><img src="'.plugins_url( $ad['content'], dirname(__FILE__)).'"></a></p>';
+									}
+									
 									$content = '<table id="salesforce_form_editor" class="wp-list-table widefat fixed">';
 									$content .= '<tr>'
 									.'<th width="10%">'.__('Field','salesforce').'</th>'
