@@ -50,12 +50,13 @@ Choose _Web to Case_ in the **Form Settings** (bottom of the form editor page).
 = Where do I find my Salesforce organization ID? =
 To find your Organization ID, do the following steps:
 
-1. Log in to your SalesForce.com account
+1. Log in to your Salesforce.com account
 2. Go to Setup &raquo; Company Profile &raquo; Company Information
 3. You'll find the Organization ID in the lower right hand corner of your screen
 
-= How do I use a SalesForce custom field? =
+= How do I use a Salesforce custom field? =
 
+1. Log in to your Salesforce.com account
 1. Go to Setup &raquo; Customize &raquo; Leads &raquo; Fields
 1. If your custom field does not exist yet, create it now.
 1. Find the API Name for your field (e.g. Custom_Field_Example__c). If it doesn't end in "__c" it's not the API name and will not work. 
