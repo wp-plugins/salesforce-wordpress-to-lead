@@ -47,12 +47,21 @@ Please see this [WordPress-to-Lead Demo video](http://www.youtube.com/watch?v=hn
 = How do I setup a Web to Case form? =
 Choose _Web to Case_ in the **Form Settings** (bottom of the form editor page).
 
-= Where do I find my Salesforce organisation ID? =
-To find your Organisation ID, do the following steps:
+= Where do I find my Salesforce organization ID? =
+To find your Organization ID, do the following steps:
 
 1. Log in to your SalesForce.com account
 2. Go to Setup &raquo; Company Profile &raquo; Company Information
-3. You'll find the Organisation ID in the lower right hand corner of your screen
+3. You'll find the Organization ID in the lower right hand corner of your screen
+
+= How do I use a SalesForce custom field? =
+
+1. Go to Setup &raquo; Customize &raquo; Leads &raquo; Fields
+1. If your custom field does not exist yet, create it now.
+1. Find the API Name for your field (e.g. Custom_Field_Example__c). If it doesn't end in "__c" it's not the API name and will not work. 
+1. Add a new field to your form using the form editor on the plugin admin screen
+1. Enter the API Name as the field name (left most box), then fill out the other fields normally (make sure to enable the field!).
+1. Save your changes -- new submissions will now post that custom field to SalesForce.
 
 = How do I use the checkbox field? =
 Like any other field. Note that it is a single checkbox, not a checkbox list.
