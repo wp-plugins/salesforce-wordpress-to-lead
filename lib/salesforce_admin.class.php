@@ -38,7 +38,7 @@ class Salesforce_Admin extends OV_Plugin_Admin {
 	
 		$dform = array();
 		
-		$dform['form_name'] = 'My Lead Form '.date('Y-m-d h:i:s');
+		$dform['form_name'] = 'My New Lead Form '.date('Y-m-d h:i:s');
 		
 		if( self::using_da() ){
 			$dform['source'] = '';
@@ -156,6 +156,23 @@ class Salesforce_Admin extends OV_Plugin_Admin {
 			
 			//echo 'ERROR= '.get_option('plugin_error');
 			
+	}
+
+	function admin_tabs( $current = 'forms' ) {
+	
+		$current = $_GET['tab'];
+		if( !$current )
+			$current = 'forms';
+			
+	    $tabs = array( 'forms' => 'Forms', 'settings' => 'Settings', 'css' => 'Styling', 'form' => 'Form Editor' );
+	    //echo '<div id="icon-themes" class="icon32"><br></div>';
+	    echo '<h2 class="nav-tab-wrapper">';
+	    foreach( $tabs as $tab => $name ){
+	        $class = ( $tab == $current ) ? ' nav-tab-active' : '';
+	        echo "<a class='nav-tab$class' href='?page=salesforce-wordpress-to-lead&tab=$tab'>$name</a>";
+	
+	    }
+	    echo '</h2>';
 	}
 	
 	function config_page() {
@@ -287,6 +304,9 @@ class Salesforce_Admin extends OV_Plugin_Admin {
 		<div class="wrap">
 			<a href="http://salesforce.com/"><div id="yoast-icon" style="background: url(<?php echo plugins_url('/salesforce-50x50.png', dirname(__FILE__) ); ?>) no-repeat;" class="icon32"><br /></div></a>
 			<h2 style="line-height: 50px;"><?php echo $this->longname; ?></h2>
+
+		<?php $this->admin_tabs(); ?>
+
 			<div class="postbox-container" style="width:70%;">
 				
 				<?php
@@ -299,7 +319,25 @@ class Salesforce_Admin extends OV_Plugin_Admin {
 									
 				<div class="metabox-holder col-wrap">	
 					<div class="meta-box-sortables">
-						<?php if (!isset($_GET['tab']) || $_GET['tab'] == 'home') { ?>
+
+						<?php if (!isset($_GET['tab']) || $_GET['tab'] == 'forms') {
+
+								$content = '<table border="0" cellspacing="0" cellpadding="4">';
+								$content .= '<tr><th>ID</th><th>Name</th></tr>';		
+								foreach($options['forms'] as $key=>$form){
+									
+									$content .= '<tr><td>'.$key.'</td><td><a href="'.$this->plugin_options_url().'&tab=form&id='.$key.'">'.$form['form_name'].'</a><td></tr>';
+								
+								}
+								$content .= '</table>';	
+								
+								$content .= '<p><a class="button-secondary" href="'.$this->plugin_options_url().'&tab=form">'.__('Add a new form','salesforce').' &raquo;</a></p>';			
+
+									$this->postbox('sfforms',__('Forms', 'salesforce'),$content); 
+						
+						}
+
+						 if (isset($_GET['tab']) && $_GET['tab'] == 'settings') { ?>
 						<form action="" method="post" id="salesforce-conf">
 							<?php if (function_exists('wp_nonce_field')) { wp_nonce_field('salesforce-udpatesettings'); } ?>
 							<input type="hidden" value="<?php echo $options['version']; ?>" name="version"/>
@@ -340,7 +378,7 @@ class Salesforce_Admin extends OV_Plugin_Admin {
 								$this->postbox('sfsettings',__('Daddy Analytics Settings', 'salesforce'), $content, $class); 
 							
 								$content = $this->textinput('successmsg',__('Success message after sending message', 'salesforce') );
-								$content .= $this->textinput('errormsg',__('Error message when not all form fields are filled', 'salesforce') );
+								$content .= $this->textinput('errormsg',__('Error message shown when required fields are not filled out', 'salesforce') );
 								$content .= $this->textinput('sferrormsg',__('Error message when Salesforce.com connection fails', 'salesforce') );
 								$this->postbox('basicsettings',__('Basic Settings', 'salesforce'),$content); 
 
@@ -379,18 +417,6 @@ class Salesforce_Admin extends OV_Plugin_Admin {
 								<div class="submit"><input type="submit" class="button-primary" name="submit" value="<?php _e("Save WordPress-to-Lead Settings", 'salesforce'); ?>" /></div>
 								<?php
 								
-								$content = '<table border="0" cellspacing="0" cellpadding="4">';
-								$content .= '<tr><th>ID</th><th>Name</th></tr>';		
-								foreach($options['forms'] as $key=>$form){
-									
-									$content .= '<tr><td>'.$key.'</td><td><a href="'.$this->plugin_options_url().'&tab=form&id='.$key.'">'.$form['form_name'].'</a><td></tr>';
-								
-								}
-								$content .= '</table>';	
-								
-								$content .= '<p><a class="button-secondary" href="'.$this->plugin_options_url().'&tab=form">'.__('Add a new form','salesforce').' &raquo;</a></p>';			
-
-									$this->postbox('sfforms',__('Forms', 'salesforce'),$content); 
 
 								if( WP_DEBUG )
 									$this->postbox('options','DEBUG: Options','<small>This dump of the plugin options is only shown when WP_DEBUG is enabled.</small><br><br>'.'<pre>'.print_r($options,true).'</pre>', 'closed'); //DEBUG
@@ -399,21 +425,29 @@ class Salesforce_Admin extends OV_Plugin_Admin {
 							?>
 							
 						</form>
-						<?php } else if ($_GET['tab'] == 'css') { 
-						echo '<p>'.salesforce_back_link($this->plugin_options_url()).'</p>'; ?>
+						<?php }
+						
+						if (isset($_GET['tab']) && $_GET['tab'] == 'css') {
+						
+						wp_enqueue_style( 'prismcss', plugins_url('assets/css/prism.css', dirname(__FILE__) ) );
+						wp_enqueue_script( 'prismjs', plugins_url('assets/js/prism.min.js', dirname(__FILE__) ) );
+
+						
+						//echo '<p>'.salesforce_back_link($this->plugin_options_url()).'</p>'; ?>
 						<p>
-						<?php echo __("<p>If you don't want the default styling this plugins uses, but add the CSS for the form to your own theme, create a folder named <i>salesforce-wordpress-to-lead</i> in your theme folder, then create a file called <i>custom.css</i> within that.</p>
+						<?php echo __("<p>If you don't want the default styling this plugin uses, you can add the CSS for the form to your own theme by creating a folder named <i>salesforce-wordpress-to-lead</i> in your theme folder, then creating a file called <i>custom.css</i> within that with your custom CSS.</p>
 							
 							<p>".get_stylesheet_directory()."/<b>salesforce-wordpress-to-lead</b>/<b>custom.css</b></p>
 							
 							<p>If found, that file will be enqueued after the default CSS, or by itself if the default CSS is disabled on the main options screen.</p>
 							");
 						
-						echo '<pre>'.file_get_contents( dirname(plugin_dir_path(__FILE__)) . '/assets/css/sfwp2l.css' ).'<pre>';
+						echo '<pre><code class="language-css">'.file_get_contents( dirname(plugin_dir_path(__FILE__)) . '/assets/css/sfwp2l.css' ).'</code><pre>';
 						
 						?>
 
-						<?php } else if ($_GET['tab'] == 'form') {
+<?php } else if ($_GET['tab'] == 'form') {
+
 if(isset($_POST['mode']) && $_POST['mode'] == 'delete' && $form_id != 1 ){
 
 echo '<div id="message" class="updated"><p>' . __('Deleted Form #','salesforce') . $form_id . '</p></div>';
@@ -425,7 +459,7 @@ echo '<div id="message" class="updated"><p>' . __('Duplicated Form #','salesforc
 }else{
 
 if(!isset($form_id) && isset($_GET['id']))
-	$form_id = (int) $_GET['id'];
+	$form_id = (int) $_GET['id'];	
 
 if( isset($_POST['form_id']) )
 	$form_id = (int) $_POST['form_id'];
@@ -619,7 +653,7 @@ i++;
 <?php } ?>
 				<?php } ?>
 				
-				<?php echo '<p>'.salesforce_back_link($this->plugin_options_url()).'</p>'; ?>
+				<?php //echo '<p>'.salesforce_back_link($this->plugin_options_url()).'</p>'; ?>
 				
 						<?php } ?>
 					</div>

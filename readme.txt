@@ -1,9 +1,9 @@
 === WordPress-to-lead for Salesforce CRM ===
 Contributors: stonydaddydonkeylabscom, nickciske
 Tags: crm, contact form, contactform, wordpress to lead, wordpresstolead, salesforce.com, salesforce, salesforce crm, contact form plugin, contact form builder, Wordpress CRM
-Requires at least: 2.8
-Tested up to: 3.7
-Stable tag: 2.1.1
+Requires at least: 3.0
+Tested up to: 3.8
+Stable tag: 2.2
 License: GPLv2
 Donate link: http://thoughtrefinery.com/donate/?item=salesforce
 
@@ -132,6 +132,8 @@ _The daily limit for Web-to-Lead requests is 500. If your organization exceeds i
 
 See also: [How many leads can we capture from our website?](https://help.salesforce.com/apex/HTViewHelpDoc?id=faq_leads_how_many_leads.htm&language=en_US#faq_leads_how_many_leads)
 
+
+
 == Other Notes ==
 
 = Filters =
@@ -147,6 +149,38 @@ function my_w2l_api_url( $url ){
 	return 'https://my.custom-api-url.com/something/';
 }
 `
+
+**sfwp2l_validate_field**
+
+Provide your own validation logic for each field.
+
+_An error array is passed in, along with the field name, submitted value, and field configuration (type, default value, required, etc)._
+
+Here's an example of blocking common free email providers:
+
+`
+add_filter('sfwp2l_validate_field','block_non_biz_emails', 10, 4);
+ 
+function block_non_biz_emails( $error, $name, $val, $field ){
+	
+	if( $name == 'email' ){
+	
+		$non_biz_domains = array( 'gmail.com', 'yahoo.com', 'hotmail.com', 'aol.com' );
+ 
+		$domain = array_pop(explode('@', $val));
+		
+		if( in_array( $domain, $non_biz_domains ) ){
+			$error['valid'] = false;
+			$error['message'] = 'Please enter a business email addresss.';
+		}
+		
+	}
+	
+	return $error;
+}
+`
+
+You can add to the $non_biz_domains to block other providers as well.
 
 **salesforce_w2l_form_html**
 
@@ -189,6 +223,17 @@ return $emails;
 `
 
 == Changelog ==
+
+= 2.2 =
+* Bug: Fixed checkboxes not retaining checked state after submit
+* Bug: Only output DA JS when token has been entered
+* Wrapped all output in a div tag to allow styling of success and error messages
+* Added #anchor to action to keep form on screen after submit when not the first item in a page (may not work in older versions of IE)
+* Add per field validation filter and error output (thanks to http://HomeStretchMktg.com for sponsoring this feature)
+* Added tabs to plugin settings page
+* Moved form list to its own tab (vs the bottom of the settings screen)
+* Added syntax highlighting to defaut CSS example on new Styling tab
+* Tested and working in WordPress 3.8
 
 = 2.1.1 =
 * Fixes a bug that caused the organization id field to be hidden on new installs
@@ -271,6 +316,10 @@ return $emails;
 * Initial release.
 
 == Upgrade Notice ==
+
+= 2.2 =
+Includes new CSS rules: make sure to update any custom CSS files with the new *.sf_field span.error_message* rule.
+Changes how error messages are output. Please review your *error message* on the settings screen to make sure it still makes sense in the new context.
 
 = 2.1 =
 This version includes most of the functionality in the "jbuchbinder" GitHub fork many users installed. Most users should not experience any issues upgrading. However, the "current date" field is not included in this release.

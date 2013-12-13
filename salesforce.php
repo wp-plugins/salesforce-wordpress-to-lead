@@ -2,9 +2,9 @@
 /*
 Plugin Name: WordPress-to-Lead for Salesforce CRM
 Plugin URI: http://daddyanalytics.com/wordpress-salesforce/?utm_source=ThoughtRefinery&utm_medium=link&utm_campaign=WP-SF-Plugin&utm_content=plugin_uri
-Description: Easily embed a contactform into your posts, pages or your sidebar, and capture the entries straight into Salesforce CRM!
+Description: Easily embed a contact form into your posts, pages or your sidebar, and capture the entries straight into Salesforce CRM. Also supports Web to Case and Comments to leads.
 Author: Daddy Analytics & Thought Refinery
-Version: 2.1.1
+Version: 2.2
 Author URI: http://daddyanalytics.com/?utm_source=ThoughtRefinery&utm_medium=link&utm_campaign=WP-SF-Plugin&utm_content=author_uri
 License: GPL2
 */
@@ -38,7 +38,7 @@ function salesforce_default_settings() {
 	$options = array();
 	$options['version'] 			= '2.0';
 	$options['successmsg'] 			= __('Success!','salesforce');
-	$options['errormsg'] 			= __('There was an error, please fill all required fields.','salesforce');
+	$options['errormsg'] 			= __('This field is required.','salesforce');
 	$options['requiredfieldstext'] 	= __('These fields are required.','salesforce');
 	$options['sferrormsg'] 			= __('Failed to connect to Salesforce.com.','salesforce');
 	$options['submitbutton']	 	= __('Submit','salesforce');
@@ -116,7 +116,7 @@ function salesforce_da_js(  ){
 	
 	$options = get_option("salesforce2");
 	
-	if( isset( $options['da_token'] ) && isset( $options['da_url'] ) && isset( $options['da_site'] ) ){
+	if( isset( $options['da_token'] ) && $options['da_token'] && isset( $options['da_url'] ) && $options['da_url'] && isset( $options['da_site'] ) && $options['da_site'] ){
 	
 		$da_token = $options['da_token'];
 		$da_url = $options['da_url'];
@@ -140,13 +140,21 @@ function salesforce_captcha(){
 	die();
 }
 
-function salesforce_form($options, $is_sidebar = false, $content = '', $form_id = 1) {
+function get_salesforce_form_id( $form_id, $sidebar ){
+	
+	return 'salesforce_w2l_lead_'.$form_id.str_replace(' ','_',$sidebar);
+	
+}
+
+function salesforce_form($options, $is_sidebar = false, $errors = null, $form_id = 1) {
 	
 	if( !isset($options['forms'][$form_id]) )
 		return;
 	
+/*
 	if (!empty($content))
 		$content = wpautop('<strong>'.$content.'</strong>');
+*/
 		
 	if ($options['usecss']) {
 		wp_enqueue_style( 'sfwp2lcss', plugins_url('/assets/css/sfwp2l.css', __FILE__) );
@@ -164,8 +172,11 @@ function salesforce_form($options, $is_sidebar = false, $content = '', $form_id 
 	
 	if ( $options['wpcf7css'] ) {
 		$content .= '<section class="form-holder clearfix"><div class="wpcf7">';
-	}	
-	$content .= "\n".'<form id="salesforce_w2l_lead_'.$form_id.str_replace(' ','_',$sidebar).'" class="'.($options['wpcf7css'] ? 'wpcf7-form' : 'w2llead'.$sidebar ).'" method="post">'."\n";
+	}
+	
+	$sf_form_id = get_salesforce_form_id( $form_id, $sidebar );
+	
+	$content .= "\n".'<form id="'.$sf_form_id.'" class="'.($options['wpcf7css'] ? 'wpcf7-form' : 'w2llead'.$sidebar ).'" method="post" action="#'.$sf_form_id.'">'."\n";
 
 	foreach ($options['forms'][$form_id]['inputs'] as $id => $input) {
 		if (!$input['show'])
@@ -189,7 +200,7 @@ function salesforce_form($options, $is_sidebar = false, $content = '', $form_id 
 		if($input['type'] != 'hidden' && $input['type'] != 'current_date') {
 			if ($options['wpcf7css']) { $content .= '<p>'; }
 			if ($input['type'] == 'checkbox') {
-				$content .= "\t\n\t".'<input type="checkbox" id="sf_'.$id.'" class="w2linput checkbox" name="'.$id.'" value="'.$val.'" />'."\n\n";
+				$content .= "\t\n\t".'<input type="checkbox" id="sf_'.$id.'" class="w2linput checkbox" name="'.$id.'" value="'.$val.'" '.checked( $_POST[$id] , $val, false ).'/>'."\n\n";
 			}
 			if (!empty($input['label'])) {
 				$content .= "\t".'<label class="w2llabel'.$error.$input['type'].($input['type'] == 'checkbox' ? ' w2llabel-checkbox-label' : '').'" for="sf_'.$id.'">'.( $input['opts'] == 'html' && $input['type'] == 'checkbox' ? stripslashes($input['label']) : esc_html(stripslashes($input['label'])));
@@ -243,6 +254,11 @@ function salesforce_form($options, $is_sidebar = false, $content = '', $form_id 
 			}
 			$content .= '</select>'."\n\n";
 		}
+		
+		if( $errors && !$errors[$id]['valid'] ){
+			$content .=  "\t\n\t<span class=\"error_message\">".  $errors[$id]['message'].'</span>';
+		}
+		
 		if($input['type'] != 'hidden' && $input['type'] != 'current_date') {
 			if ($options['wpcf7css']) { $content .= '</span></p>'; }
 			$content .= '</div>';
@@ -261,12 +277,21 @@ function salesforce_form($options, $is_sidebar = false, $content = '', $form_id 
 		$sf_hash = sha1($captcha['code'].NONCE_SALT);
 	
 		set_transient( $sf_hash, $captcha['code'], 60*15 );
-	
+		
+		$content .= '<div class="sf_field sf_field_captcha sf_type_captcha">';
+		
 		$content .=  '<label class="w2llabel">'.__('Type the text shown: *','salesforce').'</label><br>
 			<img class="w2limg" src="' . $captcha['image_src'] . '&hash=' . $sf_hash . '" alt="CAPTCHA image" /><br>';
 
-		$content .=  '<input type="text" class="w2linput text" name="captcha_text" value=""><br>';
+		$content .=  '<input type="text" class="w2linput text" name="captcha_text" value="">';
+
+		if( $errors && !$errors['captcha']['valid'] ){
+			$content .=  "<span class=\"error_message\">".$errors['captcha']['message'].'</span>';
+		}
+
 		$content .=  '<input type="hidden" class="w2linput hidden" name="captcha_hash" value="'. $sf_hash .'">';
+		
+		$content .= '</div>';
 	
 	}
 	
@@ -284,7 +309,7 @@ function salesforce_form($options, $is_sidebar = false, $content = '', $form_id 
 	$content .= "\t".'<input type="hidden" name="form_id" class="w2linput" value="'.$form_id.'" />'."\n";
 
 	//daddy analytics
-	if( isset( $options['da_token'] ) && isset( $options['da_url'] ) ){
+	if( isset( $options['da_token'] ) && $options['da_token'] && isset( $options['da_url'] ) && $options['da_url'] ){
 	
 		$da_token = $options['da_token'];
 		$da_url = $options['da_url'];
@@ -522,16 +547,43 @@ function salesforce_form_shortcode($atts) {
 		$error = false;
 		$post = array();
 		
+		
+		// field validation
 		foreach ($options['forms'][$form]['inputs'] as $id => $input) {
 		
 			$val = trim( $_POST[$id] );
-		
+			
+			$error = array(
+				'valid' => false,
+				'message' => $options['errormsg'],
+			);
+			
 			if ($input['required'] && !$val ) {
-				$options['forms'][$form]['inputs'][$id]['error'] = true;
-				$error = true;
-			} else if ($id == 'email' && $input['required'] && !is_email($_POST[$id]) ) {
-				$error = true;
-				$emailerror = true;
+				$error['valid'] = false;
+			}else{
+				$error['valid'] = true;
+			}
+			
+			if ($id == 'email' && $input['required'] && !is_email($val) ) {
+				$error['valid'] = false;
+				$error['message'] = 'The email address you entered is not valid.';
+			}
+			
+		
+			$error = apply_filters('sfwp2l_validate_field', $error, $id, $val, $options['forms'][$form]['inputs'][$id] );
+
+			//$error = apply_filters('sfwp2l_'.$id, $error, $id, $options['forms'][$form]['inputs'][$id] );
+
+			$errors[$id] = $error;
+			
+			if ($input['required'] && !$val ) {
+			
+			//$options['forms'][$form]['inputs'][$id]['error'] = true;
+				
+			//	$error = true;
+			//} else if ($id == 'email' && $input['required'] && !is_email($_POST[$id]) ) {
+			//	$error = true;
+			//	$emailerror = true;
 			} else {
 				if( isset($_POST[$id]) ) $post[$id] = trim(strip_tags(stripslashes($_POST[$id])));
 			}
@@ -552,13 +604,20 @@ function salesforce_form_shortcode($atts) {
 		if( $options['captcha'] ){
 			
 			if( $_POST['captcha_hash'] != sha1( $_POST['captcha_text'].NONCE_SALT )){
-				$error = true;
-				$captchaerror = true;
+				$has_error = true;
+				
+				$errors['captcha']['valid'] = false;
+				$errors['captcha']['message'] = __('The text you entered did not match the image.','salesforce');
 			}
 			
 		}
 		
-		if (!$error) {
+		foreach( $errors as $error ){
+			if(!$error['valid'])
+				$has_error = true;
+		}
+		
+		if (!$has_error) {
 			$result = submit_salesforce_form($post, $options, $form);
 			
 			//echo 'RESULT='.$result;
@@ -566,8 +625,7 @@ function salesforce_form_shortcode($atts) {
 			//if(!$result) echo 'false';
 						
 			if (!$result){
-				
-				$content = '<strong>'.esc_html(stripslashes($options['sferrormsg'])).'</strong>';			
+				$content = '<strong class="error_message">'.esc_html(stripslashes($options['sferrormsg'])).'</strong>';			
 			}else{
 			
 				if( !empty($options['forms'][$form]['returl']) ){
@@ -583,23 +641,36 @@ function salesforce_form_shortcode($atts) {
 					<?php
 				}
 			
-				$content = '<strong>'.esc_html(stripslashes($options['successmsg'])).'</strong>';
+				$content = '<strong class="success_message">'.esc_html(stripslashes($options['successmsg'])).'</strong>';
 			}
+			
+			$sf_form_id = get_salesforce_form_id( $form_id, $sidebar );
+			
+			$content = '<div id="'.$sf_form_id.'">'.$content.'</div>';
+			
 		} else {
 			$errormsg = esc_html( stripslashes($options['errormsg']) ) ;
+			
+/*
 			if ($emailerror)
 				$errormsg .= '<br/>'.__('The email address you entered is not a valid email address.','salesforce');
+*/
+
+/*
+			foreach( $errors as $error ){
+				if( ! $error['valid'] )
+					$errormsg .= '<br/>'.$error['message'];
+			}
+*/
 			
-			if ($captchaerror)
-				$errormsg .= '<br/>'.__('The text you entered did not match the image.','salesforce');
 			
-			$content .= salesforce_form($options, $sidebar, $errormsg, $form);
+			$content .= salesforce_form($options, $sidebar, $errors, $form);
 		}
 	} else {
 		$content = salesforce_form($options, $sidebar, null, $form);
 	}
 	
-	return $content;
+	return '<div class="salesforce_w2l_lead">'.$content.'</div>';
 }
 
 add_shortcode('salesforce', 'salesforce_form_shortcode');	
