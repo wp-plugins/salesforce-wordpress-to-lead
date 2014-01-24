@@ -223,6 +223,7 @@ return $emails;
 `
 
 **salesforce_w2l_cc_user_email_content**
+
 **salesforce_w2l_cc_admin_email_content**
 
 Allows you to filter (append, prepend, modify) the email message content sent to the user or admin(s).
