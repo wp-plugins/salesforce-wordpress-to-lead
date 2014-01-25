@@ -3,7 +3,7 @@ Contributors: stonydaddydonkeylabscom, nickciske
 Tags: crm, contact form, contactform, wordpress to lead, wordpresstolead, salesforce.com, salesforce, salesforce crm, contact form plugin, contact form builder, Wordpress CRM
 Requires at least: 3.0
 Tested up to: 3.8
-Stable tag: 2.2.3
+Stable tag: 2.2.4
 License: GPLv2
 Donate link: http://thoughtrefinery.com/donate/?item=salesforce
 
@@ -223,7 +223,6 @@ return $emails;
 `
 
 **salesforce_w2l_cc_user_email_content**
-
 **salesforce_w2l_cc_admin_email_content**
 
 Allows you to filter (append, prepend, modify) the email message content sent to the user or admin(s).
@@ -251,6 +250,9 @@ function salesforce_filter_admin_message( $message ){
 `
 
 == Changelog ==
+
+= 2.2.4 =
+* Add email and captcha error to settings page.
 
 = 2.2.3 =
 * Added filter to user and admin email content
