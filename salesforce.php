@@ -445,13 +445,18 @@ function salesforce_get_post_data( $index ){
 
 function submit_salesforce_form($post, $options) {
 	
+	global $wp_version;
+
 	$form_id = absint( $_POST['form_id'] );
 	
 	$org_id = salesforce_get_option('org_id', $form_id, $options);
+	//echo '$org_id='.$org_id;
 	
-	global $wp_version;
+	if ( !$org_id )
+		$org_id = $options['org_id']; // fallback to global
+	
 	if ( !$org_id ) {
-		error_log( "Salesforce: No organisation ID set." );
+		error_log( "Salesforce: No SalesForce Organization ID set." );
 		return false;
 	}
 
@@ -737,6 +742,11 @@ function salesforce_form_shortcode($atts) {
 				$has_error = true;
 		}
 		
+/*
+		$org_id = salesforce_get_option('org_id', $form_id, $options);
+		echo '$org_id='.$org_id;
+*/
+		
 		if (!$has_error) {
 			$result = submit_salesforce_form($post, $options, $form);
 			
@@ -792,7 +802,7 @@ function salesforce_get_option( $name, $form, $options = null ){
 			$options = salesforce_default_settings();
 	}
 	
-	if( isset( $options['forms'][$form][$name] ) )
+	if( isset( $options['forms'][$form][$name] ) && strlen( trim( $options['forms'][$form][$name] ) ) )
 		return $options['forms'][$form][$name];
 		
 	if( isset( $options[$name] ) )
@@ -877,7 +887,7 @@ add_filter( 'plugin_action_links_'.$plugin, 'salesforce_add_settings_link' );
 function salesforce_add_plugin_meta( $plugin_meta, $plugin_file, $plugin_data, $status ){
 
 	if( $plugin_file == plugin_basename( __FILE__ ) ){
-	  	array_push( $plugin_meta, '<a href="http://try.daddyanalytics.com/wordpress-to-lead-general?utm_source=ThoughtRefinery&utm_medium=link&utm_campaign=WP2L_Plugin_01&utm_content=da1_try_uri" target="_blank">Try Daddy Analytics</a>' );
+	  	//array_push( $plugin_meta, '<a href="http://try.daddyanalytics.com/wordpress-to-lead-general?utm_source=ThoughtRefinery&utm_medium=link&utm_campaign=WP2L_Plugin_01&utm_content=da1_try_uri" target="_blank">Try Daddy Analytics</a>' );
 	  	array_push( $plugin_meta, '<a href="http://wordpress.org/support/plugin/salesforce-wordpress-to-lead" target="_blank">Community Support</a>' );
 	  	array_push( $plugin_meta, '<a href="http://thoughtrefinery.com/plugins/support/?plugin=salesforce-wordpress-to-lead" target="_blank">Premium Support</a>' );
 	}
