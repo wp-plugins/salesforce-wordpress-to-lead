@@ -3,7 +3,7 @@ Contributors: stonydaddydonkeylabscom, nickciske
 Tags: crm, contact form, contactform, wordpress to lead, wordpresstolead, salesforce.com, salesforce, salesforce crm, contact form plugin, contact form builder, Wordpress CRM
 Requires at least: 3.5.2
 Tested up to: 3.8.1
-Stable tag: 2.3.4
+Stable tag: 2.3.6
 License: GPLv2
 Donate link: http://daddyanalytics.com/donate-wordpress-lead-salesforce-plugin/
 
@@ -136,10 +136,12 @@ _The daily limit for Web-to-Lead requests is 500. If your organization exceeds i
 See also: [How many leads can we capture from our website?](https://help.salesforce.com/apex/HTViewHelpDoc?id=faq_leads_how_many_leads.htm&language=en_US#faq_leads_how_many_leads)
 
 
+== Other Notes ==
 
-== Filters and Hooks ==
+= Filters and Hooks =
 
-**Note:**
+**Notes**
+
 * These should be placed in your active theme functions.php or a functionality plugin.
 * Never edit a plugin directly (unless you understand the implications of doing so).
 * You can use Pluginception to create a custom plugin for these to make them independent of your theme: https://wordpress.org/plugins/pluginception/
@@ -305,7 +307,26 @@ function salesforce_w2l_field_value_1_tester_example(  $val ){
 }
 `
 
+**salesforce_w2l_cc_user_suppress_fields**
+
+Suppress a field from showing up in the email sent to the user.
+
+`add_filter('salesforce_w2l_cc_user_suppress_fields','salesforce_w2l_cc_user_suppress_fields_example');
+
+function salesforce_w2l_cc_user_suppress_fields_example( $keys ){
+	$keys[] = 'EmbedUrl__c';
+	return $keys;
+}
+`
+
 == Changelog ==
+
+= 2.3.6 =
+* Fix issue with OID and other fields being appended to the user confirmation email
+* Add `salesforce_w2l_cc_user_suppress_fields` filter to allow supression of fields in the user confirmation email
+
+= 2.3.5 =
+* Readme improvements
 
 = 2.3.4 =
 * Fix bug in load_plugin_textdomain call
