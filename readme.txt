@@ -3,7 +3,7 @@ Contributors: stonydaddydonkeylabscom, nickciske
 Tags: crm, contact form, contactform, wordpress to lead, wordpresstolead, salesforce.com, salesforce, salesforce crm, contact form plugin, contact form builder, Wordpress CRM
 Requires at least: 3.5.2
 Tested up to: 3.9.1
-Stable tag: 2.3.8
+Stable tag: 2.3.9
 License: GPLv2
 Donate link: http://daddyanalytics.com/donate-wordpress-lead-salesforce-plugin/
 
@@ -69,7 +69,7 @@ Like any other field. Note that it is a single checkbox, not a checkbox list.
 _Checkbox lists and radio buttons will be in a future update._
 
 = How do I use the select (picklist) field? =
-Use it like any other field -- however you'll need to specify the options (and optional values) for each field using the options box (far right).
+Use it like any other field -- however you'll need to specify the options (and optional values) for each field using the options box (far right). You'll also need to use the "internal name" from Salesforce as your field name (see next FAQ).
 
 The value box for a select list is the default value (the one selected on a fresh form).
 
@@ -85,6 +85,18 @@ name1:value1 | name2:value2
 `
 
 _Note: Leading & trailing whitespace is trimmed when names and values are displayed, so feel free to use spaces to make things more readable._
+
+= How do I find the "internal name" of my picklist field? =
+
+Picklists in SalesForce (Web to Lead at least) are a strange beast -- you'd think you could pass the field name and SF would map it on their end... but they don't make it that easy. Instead you need to use the internal SF ID of the picklist... which looks more like: `00Nd0000007p1Ej` (this is just en example, this is not the id of your field).
+
+Where do you find this cryptic value? You can find it in two places (that I know of):
+
+1. Edit the field and it'll be in the URL:
+e.g. `https://na14.salesforce.com/00Nd0000007p1Ej/...`
+
+2. Generate a Web to Lead form with your field included and it'll be in the HTML
+e.g. `TestPicklist: <select  id="00Nd0000007p1Ej" name="00Nd0000007p1Ej" title="TestPicklist">`
 
 = How do I use the HTML field? =
 1. Optionally enter a label (field will display full width if a label is not entered.
@@ -106,6 +118,36 @@ Yes, version 2.0 introduces this feature. Version 2.1 allows you to duplicate fo
 
 = How do I change the Lead Source that shows up in Salesforce? =
 You can easily change this by going into the WordPress-to-Lead admin panel and, under form settings, changing the Lead Source for that form. Daddy Analytics uers can set this to blank to have it automatically filled.
+
+= I want to include the full URL the form is embedded on, but SF limits the lead source to 40 characters -- how would I do that? =
+
+The lead source supports using %URL% as the lead source (which will be replaced with the form embed url), but SF inexplicably limits the lead source to 40 characters.
+
+Here's how to route around that:
+
+`
+/*
+How to use:
+1. Create a custom URL field at SalesForce (or Text field that holds more than 255 characters if you desire). A URL field makes it clickable in the lead detail view(s).
+2. Replace URL_CUSTOM_FIELD_NAME below with the name of the custom field you setup in SalesForce,
+   it will be something like EmbedUrl__c
+3. Add a hidden field to each form with the same field name (e.g. "EmbedUrl__c")
+4. Profit
+*/
+
+add_filter( 'salesforce_w2l_field_value', 'salesforce_w2l_field_embedurl', 10, 3 );
+function salesforce_w2l_field_embedurl( $val, $field, $form ){
+
+    // Target a specific field on all forms
+    if( $field == 'URL_CUSTOM_FIELD_NAME' )
+         $val = esc_url("http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
+
+    return $val;
+
+}
+`
+
+https://gist.github.com/nciske/10047552
 
 = Can I change the submit button? =
 Of course you can! Go into the WordPress-to-Lead admin panel and, under Form Settings, change the text from the default "Submit" to whatever you'd like it to be!
@@ -321,7 +363,7 @@ function salesforce_w2l_form_action_example(  $action ){
 
 **salesforce_w2l_lead_source**
 
-Allows you to remove the form action.
+Allows you to alter the lead source (per form or globally).
 
 `
 // Alter Lead Source
@@ -336,7 +378,29 @@ function salesforce_w2l_lead_source_example(  $lead_source, $form_id ){
 }
 `
 
+**salesforce_w2l_post_args**
+
+Allows filtering of the [wp_remote_post](http://codex.wordpress.org/Function_Reference/wp_remote_post) arguments (e.g. extend the timeout, increase redirect limit, etc).
+
+`
+add_filter( 'salesforce_w2l_post_args', 'salesforce_w2l_post_args_example' );
+
+function salesforce_w2l_post_args_example( $args ){
+
+	$args['timeout'] = 10; // http timeout in seconds
+	return $args;
+
+}
+`
+
 == Changelog ==
+
+= 2.3.9 =
+* Allow filtering of wp_remote_post arguments
+* Add picklist FAQ regarding field names
+* Add Multi-Select field (aka MultiPicklist)
+* Refactor code to properly handle strings and arrays as field values (to support multi-selects)
+* Add embed URL example code to FAQ
 
 = 2.3.8 =
 * Add lead source back into admin email
