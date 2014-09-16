@@ -2,8 +2,8 @@
 Contributors: stonydaddydonkeylabscom, nickciske
 Tags: crm, contact form, contactform, wordpress to lead, wordpresstolead, salesforce.com, salesforce, salesforce crm, contact form plugin, contact form builder, Wordpress CRM
 Requires at least: 3.5.2
-Tested up to: 3.9.1
-Stable tag: 2.5.1
+Tested up to: 4.0
+Stable tag: 2.5.2
 License: GPLv2
 Donate link: http://daddyanalytics.com/donate-wordpress-lead-salesforce-plugin/
 
@@ -496,6 +496,8 @@ function salesforce_w2l_post_data_example( $post, $form_id, $form_type ){
 }
 `
 
+= Actions =
+
 **salesforce_w2l_before_submit**
 
 Allows you to do something (read only) with the post data before it's submitted to SalesForce.
@@ -541,6 +543,12 @@ function salesforce_w2l_after_submit_example( $post, $form_id, $form_type ){
 `
 
 == Changelog ==
+
+= 2.5.2 =
+* Tested up to 4.0
+* Add plugin icon
+* Form id 1 can now be duplicated
+* Duplicate forms have (copy) appended to the form name to clearly mark them as the duplicated form
 
 = 2.5.1 =
 * Refactor `salesforce_cc_admin` to allow a customizable subject (translators: affects localization strings)
