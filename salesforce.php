@@ -4,7 +4,7 @@ Plugin Name: WordPress-to-Lead for Salesforce CRM
 Plugin URI: http://wordpress.org/plugins/salesforce-wordpress-to-lead/
 Description: Easily embed a contact form into your posts, pages or your sidebar, and capture the entries straight into Salesforce CRM. Also supports Web to Case and Comments to leads.
 Author: Daddy Analytics & Thought Refinery
-Version: 2.5.2
+Version: 2.5.3
 Author URI: http://try.daddyanalytics.com/wordpress-to-lead-general?utm_source=ThoughtRefinery&utm_medium=link&utm_campaign=WP2L_Plugin_01&utm_content=da1_author_uri
 License: GPL2
 */
@@ -242,7 +242,7 @@ function salesforce_form($options, $is_sidebar = false, $errors = null, $form_id
 					$post_val = '';
 				}
 
-				$content .= "\t\n\t".'<input type="checkbox" id="sf_'.$id.'" class="w2linput checkbox" name="'.$id.'" value="'.$val.'" '.checked( $post_val, $val, false ).'/>'."\n\n";
+				$content .= "\t\n\t".'<input type="checkbox" id="sf_'.$id.'" class="w2linput checkbox" name="'.$id.'" value="'.$val.'" '.checked( $post_val, $val, false ).' />'."\n\n";
 			}
 
 			$placeholder = '';
@@ -288,16 +288,16 @@ function salesforce_form($options, $is_sidebar = false, $errors = null, $form_id
 			$content .= "\t".'<input placeholder="'.$placeholder.'" value="'.$val.'" id="sf_'.$id.'" class="';
 			$content .= $options['wpcf7css'] ? 'wpcf7-form-control wpcf7-text' : 'w2linput text';
 			$content .= $options['wpcf7css'] && $input['required'] ? ' wpcf7-validates-as-required required' : '';
-			$content .= '" name="'.$id.'" type="text"'.( !empty($input['opts']) ? ' placeholder="'.$input['opts'].'" title="'.$input['opts'].'"' : '' ).'/>'."\n\n";
+			$content .= '" name="'.$id.'" type="text"'.( !empty($input['opts']) ? ' placeholder="'.$input['opts'].'" title="'.$input['opts'].'"' : '' ).' />'."\n\n";
 		} else if ($input['type'] == 'textarea') {
 			$content .= "\t".( !$options['wpcf7css'] ? "\n\n" : '' )."\n\t".'<textarea id="sf_'.$id.'" class="';
 			$content .= $options['wpcf7css'] ? 'wpcf7-form-control wpcf7-textarea' : 'w2linput textarea';
 			$content .= $options['wpcf7css'] && $input['required'] ? ' wpcf7-validates-as-required required' : '';
 			$content .= '" name="'.$id.'"'.( !empty($input['opts']) ? ' placeholder="'.$input['opts'].'" title="'.$input['opts'].'"' : '' ).' placeholder="'.$placeholder.'">'.$val.'</textarea>'."\n\n";
 		} else if ($input['type'] == 'hidden') {
-			$content .= "\t\n\t".'<input type="hidden" id="sf_'.$id.'" class="w2linput hidden" name="'.$id.'" value="'.$val.'">'."\n\n";
+			$content .= "\t\n\t".'<input type="hidden" id="sf_'.$id.'" class="w2linput hidden" name="'.$id.'" value="'.$val.'" />'."\n\n";
 		} else if ($input['type'] == 'current_date') {
-			$content .= "\t\n\t".'<input type="hidden" id="sf_'.$id.'" class="w2linput hidden" name="'.$id.'" value="'.date($input['opts']).'">'."\n\n";
+			$content .= "\t\n\t".'<input type="hidden" id="sf_'.$id.'" class="w2linput hidden" name="'.$id.'" value="'.date($input['opts']).'" />'."\n\n";
 		} else if ($input['type'] == 'html'){
 			$content .= '<br>'.stripslashes($input['opts'])."\n\n";
 		} else if ($input['type'] == 'select' || $input['type'] == 'multi-select' ) {
@@ -326,11 +326,24 @@ function salesforce_form($options, $is_sidebar = false, $errors = null, $form_id
 				$values = array( $val );
 			}
 
-			if (strpos($input['opts'], '|') !== false) {
-				$opts = explode('|', $input['opts']);
-				foreach ($opts AS $opt) {
-					if (strpos($opt,':') !== false) {
-						list ($k, $v) = explode(':', $opt);
+			// remove excess whitespace to avoid false positive checks for newlines
+			$input['opts'] = trim( $input['opts'] );
+
+			if (strpos($input['opts'], "\n") !== false) {
+				// Newlines and pipes
+				$delim1 = "\n";
+				$delim2 = "|";
+			}else{
+				// pipes and colons
+				$delim1 = "|";
+				$delim2 = ":";
+			}
+
+			if (strpos( $input['opts'], $delim1) !== false ) {
+				$opts = explode( $delim1, $input['opts'] );
+				foreach ( $opts AS $opt ) {
+					if (strpos( $opt, $delim2 ) !== false) {
+						list ($k, $v) = explode($delim2, $opt);
 					} else {
 						$k = $v = $opt;
 					}
@@ -344,6 +357,8 @@ function salesforce_form($options, $is_sidebar = false, $errors = null, $form_id
 
 				}
 			}
+
+
 			$content .= '</select>'."\n\n";
 			//$content .= '<pre>'.print_r( $values, 1 ).'</pre>';
 
@@ -366,6 +381,8 @@ function salesforce_form($options, $is_sidebar = false, $errors = null, $form_id
 		// attempt to disable caching
 		if ( !defined( 'DONOTCACHEPAGE' ) )
 			define( 'DONOTCACHEPAGE', true );
+		if ( !defined( 'DONOTCACHEOBJECT' ) )
+			define( 'DONOTCACHEOBJECT', true );
 
 		include("lib/captcha/captcha.php");
 		$captcha = captcha();
@@ -382,14 +399,14 @@ function salesforce_form($options, $is_sidebar = false, $errors = null, $form_id
 
 			$content .=  '<label class="w2llabel">'.$label.'</label>'."\n\n".'
 				<img class="w2limg" src="' . $captcha['image_src'] . '&hash=' . $sf_hash . '" alt="CAPTCHA image" />'."\n\n";
-				$content .=  '<input type="text" class="w2linput text captcha" name="captcha_text" value="">';
+				$content .=  '<input type="text" class="w2linput text captcha" name="captcha_text" value="" />';
 
 
 		if( $errors && !$errors['captcha']['valid'] ){
 			$content .=  "<span class=\"error_message\">".$errors['captcha']['message'].'</span>';
 		}
 
-		$content .=  '<input type="hidden" class="w2linput hidden" name="captcha_hash" value="'. $sf_hash .'">';
+		$content .=  '<input type="hidden" class="w2linput hidden" name="captcha_hash" value="'. $sf_hash .'" />';
 
 		$content .= '</div>';
 
@@ -399,11 +416,11 @@ function salesforce_form($options, $is_sidebar = false, $errors = null, $form_id
 	if( $options['showccuser'] ){
 		$label = $options['ccusermsg'];
 		if( empty($label) ) $label = __('Send me a copy','salesforce');
-		$content .= "\t\n\t".'<div class="sf_field sf_field_cb sf_type_checkbox sf_cc_user"><label class="w2llabel checkbox w2llabel-checkbox-label"><input type="checkbox" name="w2lcc" class="w2linput checkbox" value="1" '.checked(1, salesforce_get_post_data('w2lcc') , false).'/> '.esc_html($label)."</label></div>\n";
+		$content .= "\t\n\t".'<div class="sf_field sf_field_cb sf_type_checkbox sf_cc_user"><label class="w2llabel checkbox w2llabel-checkbox-label"><input type="checkbox" name="w2lcc" class="w2linput checkbox" value="1" '.checked(1, salesforce_get_post_data('w2lcc') , false).' /> '.esc_html($label)."</label></div>\n";
 	}
 
 	//spam honeypot
-	$content .= "\t".'<input type="text" name="message" class="w2linput" value="" style="display: none;"/>'."\n";
+	$content .= "\t".'<input type="text" name="message" class="w2linput" value="" style="display: none;" />'."\n";
 
 	//form id
 	$content .= "\t".'<input type="hidden" name="form_id" class="w2linput" value="'.$form_id.'" />'."\n";
@@ -414,8 +431,8 @@ function salesforce_form($options, $is_sidebar = false, $errors = null, $form_id
 		$da_token = $options['da_token'];
 		$da_url = $options['da_url'];
 
-		$content .= "\t".'<input type="hidden" id="Daddy_Analytics_Token" name="'.esc_attr($da_token).'" class="w2linput" value="" style="display: none;"/>'."\n";
-		$content .= "\t".'<input type="hidden" id="Daddy_Analytics_WebForm_URL" name="'.esc_attr($da_url).'" class="w2linput" value="" style="display: none;"/>'."\n";
+		$content .= "\t".'<input type="hidden" id="Daddy_Analytics_Token" name="'.esc_attr($da_token).'" class="w2linput" value="" style="display: none;" />'."\n";
+		$content .= "\t".'<input type="hidden" id="Daddy_Analytics_WebForm_URL" name="'.esc_attr($da_url).'" class="w2linput" value="" style="display: none;" />'."\n";
 	}
 
 	$submit = stripslashes( salesforce_get_option( 'submitbutton', $form_id, $options ) );
@@ -435,7 +452,7 @@ function salesforce_form($options, $is_sidebar = false, $errors = null, $form_id
 	} else {
 		$content .= 'w2linput submit';
 	}
-	$content .= '" value="'.esc_attr($submit).'"/>'."\n";
+	$content .= '" value="'.esc_attr($submit).'" />'."\n";
 	if ($options['wpcf7css']) {
 		$content .= '</p>';
 	} else {
@@ -544,6 +561,7 @@ function submit_salesforce_form( $post, $options ) {
 	$args = array(
 		'body' 		=> $body,
 		'headers' 	=> array(
+			'Content-Type' => 'application/x-www-form-urlencoded',
 			'user-agent' => 'WordPress-to-Lead for Salesforce plugin - WordPress/'.$wp_version.'; '.get_bloginfo('url'),
 		),
 		'sslverify'	=> false,
