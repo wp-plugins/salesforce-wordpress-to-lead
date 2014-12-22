@@ -3,7 +3,7 @@ Contributors: stonydaddydonkeylabscom, nickciske, cimbura.com
 Tags: crm, contact form, contactform, wordpress to lead, wordpresstolead, salesforce.com, salesforce, salesforce crm, contact form plugin, contact form builder, Wordpress CRM
 Requires at least: 3.5.2
 Tested up to: 4.0.1
-Stable tag: 2.5.5
+Stable tag: 2.6
 License: GPLv2
 Donate link: http://daddyanalytics.com/donate-wordpress-lead-salesforce-plugin/
 
@@ -283,7 +283,15 @@ _The daily limit for Web-to-Lead requests is 500. If your organization exceeds i
 
 See also: [How many leads can we capture from our website?](https://help.salesforce.com/apex/HTViewHelpDoc?id=faq_leads_how_many_leads.htm&language=en_US#faq_leads_how_many_leads)
 
+= Can I hide the admin message insisting I enter my organization id? =
 
+Yes. Be careful -- that's there to remind you that the plugin doesn't do much without one.
+
+Add this to functions.php or a custom plugin (see other notes for more detailed instructions):
+
+`
+add_filter( 'salesforce_w2l_show_admin_nag_message', '__return_false', 10, 1 );
+`
 
 == Filters and Hooks ==
 
@@ -514,6 +522,14 @@ function salesforce_w2l_post_data_example( $post, $form_id, $form_type ){
 }
 `
 
+**salesforce_w2l_show_admin_nag_message**
+
+Suppress the organization id missing nag message (return false).
+
+`
+add_filter( 'salesforce_w2l_show_admin_nag_message', '__return_false', 10, 1 );
+`
+
 = Actions =
 
 **salesforce_w2l_before_submit**
@@ -561,6 +577,19 @@ function salesforce_w2l_after_submit_example( $post, $form_id, $form_type ){
 `
 
 == Changelog ==
+
+= 2.6 =
+* Add filter to allow suppression of the admin screen nag about a missing organization id
+* Fix bug that was adding a colon after checkboxes and HTML field labels
+* Fix checkbox label alignment on top-aligned forms
+* Fix Top Aligned label radio option not being checked when selected (admin)
+* Add label layout option for sidebar forms
+* CSS tweaks to improve field spacing and improve default sidebar layouts
+* Restrain overly wide select fields in sidebar forms
+* Beautify CSS formatting consistent
+
+= 2.5.6 =
+* Further improve auto detection of new options format
 
 = 2.5.5 =
 * Fix bug in auto detect of new options format that could break fields with newlines and pipes mixed together
@@ -777,6 +806,9 @@ function salesforce_w2l_after_submit_example( $post, $form_id, $form_type ){
 * Initial release.
 
 == Upgrade Notice ==
+
+= 2.6 =
+The default CSS changed in this release. If you've customized the form output, double check your form styling after upgrade.
 
 = 2.5 =
 Now features an importer: Generate your Web-to-Lead form at Salesforce, provide the HTML code to the plugin, then automatically import it into WordPress to Lead in a *single click*!
