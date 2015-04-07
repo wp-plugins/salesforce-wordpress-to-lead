@@ -582,12 +582,14 @@ class Salesforce_Admin extends OV_Plugin_Admin {
 											$content .= '</td>';
 											$content .= '<td><select name="inputs['.$field.'_type]">';
 											$content .= '<option value="text" '.selected($input['type'],'text',false).'>Text</option>';
+											$content .= '<option value="email" '.selected($input['type'],'email',false).'>Email</option>';
 											$content .= '<option value="textarea" '.selected($input['type'],'textarea',false).'>Textarea</option>';
 											$content .= '<option value="hidden" '.selected($input['type'],'hidden',false).'>Hidden</option>';
 											$content .= '<option value="select" '.selected($input['type'],'select',false).'>Select (picklist)</option>';
 											$content .= '<option value="multi-select" '.selected($input['type'],'multi-select',false).'>Multi-Select (picklist)</option>';
 											$content .= '<option value="checkbox" '.selected($input['type'],'checkbox',false).'>Checkbox</option>';
 											//$content .= '<option '.selected($input['type'],'current_date',false).'>current_date</option>';
+											$content .= '<option value="date" '.selected($input['type'],'date',false).'>Date</option>';
 											$content .= '<option value="html" '.selected($input['type'],'html',false).'>HTML</option>';
 											$content .= '</select></td>';
 											$content .= '<td><small>Label:</small> <input size="10" name="inputs['.$field.'_label]" type="text" value="'.esc_html(stripslashes($input['label'])).'"/>'; //</td>'.'<td>';
@@ -624,12 +626,14 @@ class Salesforce_Admin extends OV_Plugin_Admin {
 	row += '</table></td>';
 	row += '<td><select name="add_inputs['+i+'][type]">'
 		+ '<option value="text">Text</option>'
+		+ '<option value="email">Email</option>'
 		+ '<option value="textarea">Textarea</option>'
 		+ '<option value="hidden">Hidden</option>'
 		+ '<option value="select">Select (picklist)</option>'
 		+ '<option value="multi-select">Multi-Select (picklist)</option>'
 		+ '<option value="checkbox">Checkbox</option>'
 		//+ '<option value="current_date">current_date</option>'
+		+ '<option value="date">Date</option>'
 		+ '<option value="html">HTML</option>'
 		+ '</select></td>';
 	row += '<td><small>Label:</small><input size="10" type="text" name="add_inputs['+i+'][label]">';
