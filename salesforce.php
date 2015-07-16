@@ -4,7 +4,7 @@ Plugin Name: WordPress-to-Lead for Salesforce CRM
 Plugin URI: http://wordpress.org/plugins/salesforce-wordpress-to-lead/
 Description: Easily embed a contact form into your posts, pages or your sidebar, and capture the entries straight into Salesforce CRM. Also supports Web to Case and Comments to leads.
 Author: Daddy Analytics & Thought Refinery
-Version: 2.6.5
+Version: 2.6.6
 Author URI: http://try.daddyanalytics.com/wordpress-to-lead-general?utm_source=ThoughtRefinery&utm_medium=link&utm_campaign=WP2L_Plugin_01&utm_content=da1_author_uri
 License: GPL2
 */
@@ -307,7 +307,7 @@ function salesforce_form($options, $is_sidebar = false, $errors = null, $form_id
 			$content .= '" name="'.$id.'" '.( !empty($input['opts']) ? ' placeholder="'.$input['opts'].'" title="'.$input['opts'].'"' : '' ).' />'."\n\n";
 
 		}else if ($input['type'] == 'date') {
-			$content .= "\t".'<input type="date" placeholder="'.$placeholder.'" value="'.$val.'" id="sf_'.$id.'" class="';
+			$content .= "\t".'<input type="text" placeholder="'.$placeholder.'" value="'.$val.'" id="sf_'.$id.'" class="';
 			$content .= $options['wpcf7css'] ? 'wpcf7-form-control wpcf7-text' : 'w2linput text';
 			$content .= $options['wpcf7css'] && $input['required'] ? ' wpcf7-validates-as-required required' : '';
 			$content .= '" name="'.$id.'" />'."\n\n";
@@ -644,11 +644,9 @@ function submit_salesforce_form( $post, $options ) {
 
 		do_action( 'salesforce_w2l_error_submit', $result, $post, $form_id, $form_type );
 
-		if( isset( $options['ccadmin'] ) && $options['ccadmin'] ){
-			$subject = __( 'Salesforce Web to %%type%% Error', 'salesforce' );
-			$append = print_r( $result, 1 );
-			salesforce_cc_admin( $post, $options, $form_id, $subject, $append );
-		}
+		$subject = __( 'Salesforce Web to %%type%% Error', 'salesforce' );
+		$append = print_r( $result, 1 );
+		salesforce_cc_admin( $post, $options, $form_id, $subject, $append );
 
 		return false;
 	}
@@ -664,8 +662,7 @@ function submit_salesforce_form( $post, $options ) {
 		if( isset( $_POST['w2lcc'] ) && $_POST['w2lcc'] == 1 )
 			salesforce_cc_user($post, $options, $form_id);
 
-		if( isset( $options['ccadmin'] ) && $options['ccadmin'] )
-			salesforce_cc_admin($post, $options, $form_id);
+		salesforce_cc_admin($post, $options, $form_id);
 
 		// Prevent multiple form submissions by clearing key data
 		unset( $_POST['form_id'] );
@@ -680,8 +677,16 @@ function submit_salesforce_form( $post, $options ) {
 
 function salesforce_cc_user( $post, $options, $form_id = 1 ){
 
-	$from_name = apply_filters('salesforce_w2l_cc_user_from_name', get_bloginfo('name'));
-	$from_email = apply_filters('salesforce_w2l_cc_user_from_email', get_option('admin_email'));
+	$from_name = salesforce_get_option( 'emailfromname', $form_id, $options );
+	if( !$from_name )
+		$from_name = get_bloginfo('name');
+
+	$from_email = salesforce_get_option( 'emailfromaddress', $form_id, $options );
+	if( !$from_email )
+		$from_email = get_option('admin_email');
+
+	$from_name = apply_filters('salesforce_w2l_cc_user_from_name', $from_name );
+	$from_email = apply_filters('salesforce_w2l_cc_user_from_email', $from_email );
 
 	$headers = 'From: '.$from_name.' <' . $from_email . ">\r\n";
 
@@ -691,7 +696,6 @@ function salesforce_cc_user( $post, $options, $form_id = 1 ){
 		$subject = str_replace('%BLOG_NAME%', get_bloginfo('name'), $options['subject']);
 	}
 	if( empty($subject) ) $subject = __('Thank you for contacting','salesforce').' '.get_bloginfo('name');
-
 
 	//remove hidden fields
 	foreach ($options['forms'][$form_id]['inputs'] as $id => $input) {
@@ -744,8 +748,16 @@ function salesforce_cc_admin( $post, $options, $form_id = 1, $subject = '', $app
 	if( !$subject )
 		$subject = __( 'Salesforce Web to %%type%% Submission', 'salesforce' );
 
-	$from_name = apply_filters('salesforce_w2l_cc_admin_from_name', get_bloginfo('name'));
-	$from_email = apply_filters('salesforce_w2l_cc_admin_from_email', get_option('admin_email'));
+	$from_name = salesforce_get_option( 'emailfromname', $form_id, $options );
+	if( !$from_name )
+		$from_name = get_bloginfo('name');
+
+	$from_email = salesforce_get_option( 'emailfromaddress', $form_id, $options );
+	if( !$from_email )
+		$from_email = get_option('admin_email');
+
+	$from_name = apply_filters('salesforce_w2l_cc_admin_from_name', $from_name);
+	$from_email = apply_filters('salesforce_w2l_cc_admin_from_email', $from_email);
 
 	$headers = 'From: '.$from_name.' <' . $from_email . ">\r\n";
 	if (get_option('email_sender') != '') {
@@ -784,7 +796,23 @@ function salesforce_cc_admin( $post, $options, $form_id = 1, $subject = '', $app
 		$message .= "\r\n".'= Addditional Information ='."\r\n\r\n".$append."\r\n";
 	}
 
-	$emails = array( get_option('admin_email') );
+	$emails = array();
+
+	// cc admin?
+	if( isset( $options['ccadmin'] ) && $options['ccadmin'] )
+		$emails[] = get_option('admin_email');
+
+	// cc others?
+	if( isset( $options['ccothers'] ) && $options['ccothers'] ){
+		$others = explode( ',', $options['ccothers'] );
+
+		if( count( $others ) ){
+			foreach( $others as $other ){
+				$emails[] = trim( $other );
+			}
+		}
+
+	}
 
 	$emails = apply_filters( 'salesforce_w2l_cc_admin_email_list', $emails );
 
