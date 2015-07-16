@@ -38,6 +38,12 @@ Please see this [WordPress-to-Lead Demo video](http://www.youtube.com/watch?v=hn
 
 == Frequently Asked Questions ==
 
+= Does this plugin have any hooks or filters? Is there documentation? =
+
+Yes, quite a few.
+
+Hooks & Filters Documentation (https://wordpress.org/plugins/salesforce-wordpress-to-lead/other_notes/)
+
 = I'm not seeing any errors, but the entry didn't get added to Salesforce! =
 
 To turn on in browser debugging, add a hidden field (enabled) named `debug` and set the value to `1`.
@@ -324,8 +330,6 @@ add_filter( 'salesforce_w2l_show_admin_nag_message', '__return_false', 10, 1 );
 `
 
 == Filters and Hooks ==
-
-= Filters and Hooks =
 
 **Note:**
 
