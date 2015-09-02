@@ -2,8 +2,8 @@
 Contributors: stonydaddydonkeylabscom, nickciske, cimbura.com
 Tags: crm, contact form, contactform, wordpress to lead, wordpresstolead, salesforce.com, salesforce, salesforce crm, contact form plugin, contact form builder, Wordpress CRM
 Requires at least: 3.5.2
-Tested up to: 4.2.2
-Stable tag: 2.6.6
+Tested up to: 4.3
+Stable tag: 2.6.7
 License: GPLv2
 Donate link: https://donate.charitywater.org/donate
 
@@ -21,8 +21,8 @@ You can fully configure all the different settings for the form, and then use a 
 Please see this [WordPress-to-Lead Demo video](http://www.youtube.com/watch?v=hnMzkxPUIyc) to get a full grasp of some of the power this plugin holds (though it's a bit outdated!).
 
 #### Previous contributors:
-* Joost de Valk (http://profiles.wordpress.org/joostdevalk/)
-* ModernTribe (http://profiles.wordpress.org/moderntribe/)
+* [Joost de Valk](http://profiles.wordpress.org/joostdevalk/)
+* [ModernTribe](http://profiles.wordpress.org/moderntribe/)
 
 == Screenshots ==
 
@@ -37,6 +37,12 @@ Please see this [WordPress-to-Lead Demo video](http://www.youtube.com/watch?v=hn
 1. Enter your Salesforce.com Organization ID on the WordPress-to-Lead plugin configuration page.
 
 == Frequently Asked Questions ==
+
+= Does this plugin have any hooks or filters? Is there documentation? =
+
+Yes, quite a few.
+
+[Hooks & Filters Documentation](https://wordpress.org/plugins/salesforce-wordpress-to-lead/other_notes/)
 
 = I'm not seeing any errors, but the entry didn't get added to Salesforce! =
 
@@ -325,8 +331,6 @@ add_filter( 'salesforce_w2l_show_admin_nag_message', '__return_false', 10, 1 );
 
 == Filters and Hooks ==
 
-= Filters and Hooks =
-
 **Note:**
 
 * These should be placed in your active theme functions.php or a functionality plugin.
@@ -592,6 +596,26 @@ function salesforce_w2l_field_value_geoip_example( $val, $field, $form ){
 }
 `
 
+`
+// Autofill a date
+// https://codex.wordpress.org/Function_Reference/current_time
+// http://php.net/manual/en/function.date.php
+
+add_filter( 'salesforce_w2l_field_value', 'salesforce_w2l_field_value_date_example', 10, 3 );
+
+function salesforce_w2l_field_value_date_example( $val, $field, $form ){
+
+    $form_id = 1; // form id to act upon
+    $field_name = 'mydatefield__c'; // API Name of the field you want to auto check
+
+    if( $form == $form_id && $field_name == $field && ! $_POST )
+        return current_time('Y-m-d'); // or whatever date format you want
+
+    return $val;
+
+}
+`
+
 **salesforce_w2l_form_action**
 
 Allows you to remove the form action.
@@ -707,6 +731,12 @@ function salesforce_w2l_after_submit_example( $post, $form_id, $form_type ){
 `
 
 == Changelog ==
+
+= 2.6.7 =
+* Add setting to remove WP CF7 javascript to fix it hijacking forms with WP CF7 CSS integration turned on
+* Add setting to enable SSL verification of SalesForce SSL cert when connecting to the API
+* Use protocol-less URLs for external resources -- fixes insecure content issues (thanks Charles Augello)
+* Pass $post to `salesforce_w2l_api_url` and `salesforce_w2l_cc_admin_email_subject` (thanks Haruhiko Kobayashi)
 
 = 2.6.6 =
 * Add setting to make it easier to CC multiple people on new submissions
